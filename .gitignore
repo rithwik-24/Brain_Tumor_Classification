@@ -153,6 +153,7 @@ Thumbs.db
 #################################
 models/*.h5
 !models/cnn_model.h5
+!models/xception_model.weights.h5
 models/*.pt
 models/*.pth
 models/*.ckpt
