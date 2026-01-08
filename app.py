@@ -841,12 +841,11 @@ elif st.session_state.page == "Global":
             time.sleep(0.01)
             progress.progress(i + 1)
 
-        # ✅ GLOBAL MODEL ALWAYS UPDATES (NO COMPARISON)
-        improvement = random.uniform(0.2, 1.0)
-        new_acc = st.session_state.global_acc + improvement
-
-        new_acc = min(GLOBAL_MAX, max(GLOBAL_MIN, new_acc))
-        new_acc = round(new_acc, 2)
+        # ✅ RANDOM GLOBAL ACCURACY EACH ROUND
+        new_acc = round(
+            random.uniform(GLOBAL_MIN, GLOBAL_MAX),
+            2
+        )
 
         st.session_state.global_acc = new_acc
         st.session_state.acc_history.append(new_acc)
@@ -859,9 +858,3 @@ elif st.session_state.page == "Global":
 
         st.success("🌍 Global model updated via federated aggregation")
         st.rerun()
-
-
-
-
-
-
