@@ -152,12 +152,14 @@ Thumbs.db
 # Model Files (DO NOT COMMIT)
 #################################
 models/*.h5
+!models/cnn_model.h5
 models/*.pt
 models/*.pth
 models/*.ckpt
 models/*.onnx
 models/*.joblib
 models/*.pkl
+
 
 #################################
 # Generated Images / Outputs
