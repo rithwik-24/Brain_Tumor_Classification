@@ -528,7 +528,8 @@
 #         st.warning("Run at least one client prediction to enable aggregation.")
 
 #     st.markdown("</div>", unsafe_allow_html=True)
-
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import streamlit as st
 import tensorflow as tf
 import numpy as np
