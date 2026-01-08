@@ -1,0 +1,75 @@
+.stApp {
+    background: url("assets/background.png") no-repeat center center fixed;
+    background-size: cover;
+}
+
+.glass {
+    background: rgba(15, 25, 40, 0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.card {
+    background: rgba(20, 35, 55, 0.75);
+    border-radius: 20px;
+    padding: 30px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 30px rgba(0,200,255,0.3);
+}
+.button {
+    background-color: #1E90FF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.button:hover {
+    background-color: #1C86EE;
+}
+.input-field {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+}
+/* The "Deep Space" Tech Background */
+.dashboard-bg {
+  min-height: 100vh;
+  width: 100%;
+  /* Creates the deep blue to black radial depth */
+  background: radial-gradient(circle at center, #102a43 0%, #050a0f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* The faint grid overlay */
+.dashboard-bg::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(rgba(18, 113, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 113, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+/* The "Glow" light leaks in the corners */
+.dashboard-bg::after {
+  content: "";
+  position: absolute;
+  top: -10%; left: -10%;
+  width: 50%; height: 50%;
+  background: radial-gradient(circle, rgba(0, 150, 255, 0.1) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+}

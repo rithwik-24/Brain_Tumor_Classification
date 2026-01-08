@@ -1,0 +1,181 @@
+# # Python
+# __pycache__/
+# *.py[cod]
+# *$py.class
+# *.so
+# .Python
+# build/
+# develop-eggs/
+# dist/
+# downloads/
+# eggs/
+# .eggs/
+# lib/
+# lib64/
+# parts/
+# sdist/
+# var/
+# wheels/
+# *.egg-info/
+# .installed.cfg
+# *.egg
+
+# # Virtual Environment
+# venv/
+# ENV/
+# env/
+# .venv
+
+# # Environment variables
+# .env
+# .env.local
+
+# # Streamlit
+# .streamlit/secrets.toml
+
+# # IDE
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
+# *~
+
+# # OS
+# .DS_Store
+# .DS_Store?
+# ._*
+# .Spotlight-V100
+# .Trashes
+# ehthumbs.db
+# Thumbs.db
+
+# # Generated files
+# saliency_maps/*.png
+# saliency_maps/*.jpg
+# saliency_maps/*.jpeg
+# !saliency_maps/.gitkeep
+
+# # Logs
+# *.log
+
+# # Jupyter Notebook
+# .ipynb_checkpoints
+
+# # Model files (too large for git, downloaded from cloud)
+# models/*.h5
+# .gitattributes
+# notebooks/BrainTumor.ipynb
+# .git_old/
+
+
+#################################
+# Python
+#################################
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+#################################
+# Build / Distribution
+#################################
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+#################################
+# Virtual Environments
+#################################
+venv/
+ENV/
+env/
+.venv/
+fl_env/
+
+#################################
+# Environment Variables / Secrets
+#################################
+.env
+.env.*
+.streamlit/secrets.toml
+
+#################################
+# Streamlit
+#################################
+.streamlit/cache/
+.streamlit/.config/
+
+#################################
+# IDE / Editor
+#################################
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+#################################
+# OS Files
+#################################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+#################################
+# Logs
+#################################
+*.log
+
+#################################
+# Jupyter
+#################################
+.ipynb_checkpoints/
+
+#################################
+# Model Files (DO NOT COMMIT)
+#################################
+models/*.h5
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.onnx
+models/*.joblib
+models/*.pkl
+
+#################################
+# Generated Images / Outputs
+#################################
+saliency_maps/*.png
+saliency_maps/*.jpg
+saliency_maps/*.jpeg
+
+# Keep directory structure
+!saliency_maps/.gitkeep
+
+#################################
+# Notebooks / Old Git Data
+#################################
+notebooks/BrainTumor.ipynb
+.git_old/
+
+#################################
+# Git Attributes (optional)
+#################################
+.gitattributes
