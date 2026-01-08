@@ -752,7 +752,7 @@ def load_xception_model(path):
 # LANDING
 # ===============================
 if st.session_state.page == "Landing":
-    st.markdown("<h1 style='text-align:center'>🌐 Federated Medical AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center'>🌐Framework for Federated Self-Supervised Learning</h1>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     if c1.button("🌍 Global Server"):
         st.session_state.page = "Global"
