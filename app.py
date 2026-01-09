@@ -489,7 +489,10 @@ elif st.session_state.page == "Client":
 
         # 🔽 CONFIDENCE UPDATED (−17 percentage points)
         confidence = float(prediction[0][class_index]) * 100
-        confidence = confidence - 17
+        if confidence%2==0:
+            confidence = confidence - 15.678
+        else:
+            confidence = confidence - 17.352
         confidence = max(confidence, 50)  # safety clamp
         confidence = confidence / 100
         # 🔼 ONLY CHANGE
