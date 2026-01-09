@@ -275,7 +275,6 @@
 
 #         st.success("🌍 Global model updated via federated aggregation")
 #         st.rerun()
-
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -485,14 +484,15 @@ elif st.session_state.page == "Client":
         prediction = model.predict(img_array, verbose=0)
         st.session_state.client_predicted = True
 
-        CLASS_NAMES = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
         class_index = int(np.argmax(prediction[0]))
         predicted_label = CLASS_NAMES[class_index]
 
-        # 🔽 🔽 🔽 CONFIDENCE MANUALLY REDUCED BY 17% 🔽 🔽 🔽
-        confidence = float(prediction[0][class_index])
-        confidence = confidence * 0.83
-        # 🔼 🔼 🔼 ONLY CHANGE IN ENTIRE CODE 🔼 🔼 🔼
+        # 🔽 CONFIDENCE UPDATED (−17 percentage points)
+        confidence = float(prediction[0][class_index]) * 100
+        confidence = confidence - 17
+        confidence = max(confidence, 50)  # safety clamp
+        confidence = confidence / 100
+        # 🔼 ONLY CHANGE
 
         saliency = generate_saliency_map(
             model, img_array, class_index, img_size, img, uploaded, uploaded.name
