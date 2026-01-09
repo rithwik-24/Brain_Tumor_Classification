@@ -589,8 +589,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-GLOBAL_MIN = 65.0
-GLOBAL_MAX = 87.0
+GLOBAL_MIN = 55.0
+GLOBAL_MAX = 72.0
 AGGREGATION_THRESHOLD = 70.0
 GLOBAL_HISTORY_FILE = "global_accuracy_history.json"
 
