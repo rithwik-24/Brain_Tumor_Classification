@@ -781,7 +781,6 @@ elif st.session_state.page == "Client":
         confidence = float(prediction[0][class_index]) * 100
 
         # reduce by 17.7%
-        confidence *= 0.823
 
         # if confidence is even, add small random decimal noise
         if int(confidence) % 2 == 0:
