@@ -613,71 +613,87 @@ authenticator = stauth.Authenticate(
 )
 
 # ======================================
-# LOGIN
+# SIDEBAR NAVIGATION
 # ======================================
 
-authenticator.login(location="main")
-
-auth_status = st.session_state.get("authentication_status")
+menu = ["Login", "Sign Up"]
+choice = st.sidebar.selectbox("Navigation", menu)
 
 # ======================================
-# REGISTER NEW USER
+# LOGIN PAGE
 # ======================================
 
-if auth_status is None:
+if choice == "Login":
 
-    st.markdown("## Create New Account")
+    st.title("Login")
 
-    try:
-        result = authenticator.register_user(
-            location="main"
+    authenticator.login(location="main")
+
+    auth_status = st.session_state.get("authentication_status")
+
+    if auth_status == False:
+        st.error("Invalid username or password")
+
+    elif auth_status is None:
+        st.warning("Please enter login details")
+
+    elif auth_status:
+
+        st.success(f"Welcome {st.session_state['name']}")
+
+        st.sidebar.success(f"Logged in as {st.session_state['name']}")
+
+        authenticator.logout("Logout", "sidebar")
+
+        # ==============================
+        # DASHBOARD
+        # ==============================
+
+        st.title("Federated Medical AI")
+
+        st.write("Upload MRI scan for tumor detection.")
+
+        uploaded_file = st.file_uploader(
+            "Upload Brain MRI",
+            type=["jpg", "png", "jpeg"]
         )
 
+        if uploaded_file:
+            st.image(uploaded_file)
+            st.success("Model prediction will run here.")
+
+# ======================================
+# SIGNUP PAGE
+# ======================================
+
+elif choice == "Sign Up":
+
+    st.title("Create New Account")
+
+    try:
+        result = authenticator.register_user(location="main")
+
         if result:
+
             email, username, name = result
 
             with open("users.json", "w") as file:
                 json.dump(config, file, indent=4)
 
             st.success("User registered successfully!")
+            st.info("Now go to Login page")
 
     except Exception as e:
         st.error(e)
 
-# ======================================
-# LOGIN CHECK
-# ======================================
 
-if auth_status == False:
-    st.error("Invalid username or password")
-    st.stop()
 
-elif auth_status is None:
-    st.warning("Please login")
-    st.stop()
 
-# ======================================
-# MAIN APP
-# ======================================
 
-elif auth_status:
 
-    authenticator.logout("Logout", "sidebar")
 
-    st.sidebar.success(f"Welcome {st.session_state['name']}")
 
-    st.title("Federated Medical AI")
-
-    st.write("Upload MRI scan for tumor detection.")
-
-    uploaded_file = st.file_uploader(
-        "Upload Brain MRI",
-        type=["jpg", "png", "jpeg"]
-    )
-
-    if uploaded_file:
-        st.image(uploaded_file)
-        st.success("Model prediction will run here.")
+        
 # ==========================================
 # CONFIG
 # ==========================================
