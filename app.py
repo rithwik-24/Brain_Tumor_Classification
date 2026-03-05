@@ -606,20 +606,21 @@ authenticator = stauth.Authenticate(
     config["cookie"]["expiry_days"]
 )
 
-name, authentication_status, username = authenticator.login("Login", "main")
+authenticator.login(location="main")
 
-if authentication_status == False:
+if st.session_state["authentication_status"] == False:
     st.error("Invalid username or password")
     st.stop()
 
-elif authentication_status == None:
+elif st.session_state["authentication_status"] == None:
     st.warning("Please enter username and password")
     st.stop()
 
-elif authentication_status:
+elif st.session_state["authentication_status"]:
 
-    authenticator.logout("Logout", "sidebar")
-    st.sidebar.success(f"Welcome {name}")
+    authenticator.logout(location="sidebar")
+
+    st.sidebar.success(f"Welcome {st.session_state['name']}")
 
 # ==========================================
 # CONFIG
