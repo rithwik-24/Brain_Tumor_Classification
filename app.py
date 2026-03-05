@@ -584,6 +584,7 @@ from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.optimizers import Adamax
 
 from auth_db import init_db, verify_user, create_user, get_user_by_username, get_user_by_email
+from auth_db import init_db, verify_user, create_user, get_user_by_username, get_user_by_email, set_active_session, get_active_session
 
 
 # initialize DB
@@ -674,9 +675,15 @@ elif st.session_state.page == "login":
     if st.button("Login"):
         user = verify_user(username, password)
         if user:
+            # issue session token and store server-side to prevent reuse across devices
+            import uuid
+            token = str(uuid.uuid4())
+            set_active_session(username, token)
+
             st.session_state.authentication_status = True
             st.session_state.username = username
             st.session_state.name = user.get("name")
+            st.session_state.session_token = token
             st.success("Login successful")
             time.sleep(1)
             st.session_state.page = "Landing"
@@ -736,9 +743,16 @@ elif st.session_state.page == "dashboard":
 
     st.sidebar.success(f"Welcome {st.session_state.get('name')}")
     if st.sidebar.button("Logout"):
+        # clear server-side active session
+        try:
+            set_active_session(st.session_state.get("username"), None)
+        except Exception:
+            pass
+
         st.session_state.authentication_status = False
         st.session_state.username = None
         st.session_state.name = None
+        st.session_state.session_token = None
         st.session_state.page = "home"
         st.rerun()
 
@@ -1015,6 +1029,21 @@ elif st.session_state.page == "Client":
 
         st.success(f"Diagnosis: {predicted_label}")
         st.metric("Confidence", f"{confidence*100:.2f}%")
+
+        # ensure session token still valid (prevent reuse across devices)
+        if st.session_state.get("authentication_status"):
+            try:
+                active = get_active_session(st.session_state.get("username"))
+                if active != st.session_state.get("session_token"):
+                    st.warning("Session invalidated (logged in elsewhere). Please login again.")
+                    st.session_state.authentication_status = False
+                    st.session_state.username = None
+                    st.session_state.name = None
+                    st.session_state.session_token = None
+                    st.session_state.page = "login"
+                    st.rerun()
+            except Exception:
+                pass
 
         # Save client log entry
         entry = {

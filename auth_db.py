@@ -26,6 +26,13 @@ def init_db():
         """
     )
     conn.commit()
+    # ensure active_session column exists for session tokens
+    try:
+        cur.execute("ALTER TABLE users ADD COLUMN active_session TEXT DEFAULT NULL")
+    except Exception:
+        # column probably exists
+        pass
+    conn.commit()
     conn.close()
 
 
@@ -68,6 +75,25 @@ def create_user(name: str, username: str, email: str, password: str) -> bool:
     conn.commit()
     conn.close()
     return True
+
+
+def set_active_session(username: str, token: Optional[str]):
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET active_session = ? WHERE username = ?", (token, username))
+    conn.commit()
+    conn.close()
+
+
+def get_active_session(username: str) -> Optional[str]:
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT active_session FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return row["active_session"]
 
 
 def verify_user(username: str, password: str) -> Optional[Dict]:
