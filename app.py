@@ -629,24 +629,26 @@ elif st.session_state["authentication_status"]:
 # ===============================
 
 try:
-    if st.session_state["authentication_status"]:
 
-        if st.sidebar.checkbox("Register New User"):
+    # allow registration BEFORE login
+    if st.session_state["authentication_status"] is None:
 
-            try:
-                email, username, name = authenticator.register_user(
-                    location="sidebar",
-                    preauthorization=False
-                )
+        st.markdown("### Create Account")
 
-                if email:
-                    st.success("User registered successfully")
+        try:
+            email, username, name = authenticator.register_user(
+                location="main",
+                preauthorization=False
+            )
 
-                    with open("users.json", "w") as file:
-                        json.dump(config, file, indent=4)
+            if email:
+                st.success("User registered successfully")
 
-            except Exception as e:
-                st.error(e)
+                with open("users.json", "w") as file:
+                    json.dump(config, file, indent=4)
+
+        except Exception as e:
+            st.error(e)
 
 except:
     pass
