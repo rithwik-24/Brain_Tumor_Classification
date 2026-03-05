@@ -659,7 +659,7 @@ elif st.session_state.page == "login":
     elif auth_status:
         st.success("Login successful")
         time.sleep(1)
-        st.session_state.page = "dashboard"
+        st.session_state.page = "Landing"
         st.rerun()
 
     if st.button("⬅ Back"):
@@ -723,7 +723,7 @@ elif st.session_state.page == "signup":
 
         time.sleep(1)
 
-        st.session_state.page = "dashboard"
+        st.session_state.page = "Landing"
         st.rerun()
 
     if st.button("⬅ Back"):
@@ -776,7 +776,7 @@ elif st.session_state.page == "dashboard":
 
             prediction = model.predict(img)
 
-            classes = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
+            classes = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
 
             pred_index = np.argmax(prediction)
             confidence = prediction[0][pred_index] * 100
@@ -800,7 +800,7 @@ GLOBAL_MAX = 72.0
 AGGREGATION_THRESHOLD = 70.0
 GLOBAL_HISTORY_FILE = "global_accuracy_history.json"
 
-CLASS_NAMES = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
+CLASS_NAMES = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
 
 output_dir = "saliency_maps"
 os.makedirs(output_dir, exist_ok=True)
