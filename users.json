@@ -4,13 +4,32 @@
       "admin": {
         "name": "Admin",
         "email": "admin@gmail.com",
-        "password": "$2b$12$abcdefghijkabcdefghijkabcdefghijkabcdefghijk"
+        "password": "$2b$12$KIXQ5m5eP4H0Wn8rQ5sRjObYvF0FQdO5cNnP9v0VY7YwC7kE8v7QK"
+      },
+
+      "rithwik": {
+        "name": "Rithwik",
+        "email": "rithwik@gmail.com",
+        "password": "$2b$12$7tKk6V8j9wB6sY1v1L5mI.RC9t3xG3R6p7q8s9t0u1v2w3x4y5z6"
+      },
+
+      "doctor": {
+        "name": "Dr. Sharma",
+        "email": "doctor@gmail.com",
+        "password": "$2b$12$1fJHk8nYb3k9u7p0c8F1D.q9R3t7v6p4n1s5g8h2j3k4l5m6n7"
+      },
+
+      "researcher": {
+        "name": "AI Researcher",
+        "email": "researcher@gmail.com",
+        "password": "$2b$12$9jH7g5k4l3p2o1i0u8y7t6r5e4w3q2z1x9c8v7b6n5m4l3k2j"
       }
     }
   },
+
   "cookie": {
     "name": "federated_ai_cookie",
-    "key": "abcdef",
+    "key": "federated_ai_secret_key_2026",
     "expiry_days": 1
   }
 }
