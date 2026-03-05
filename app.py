@@ -742,11 +742,9 @@ elif st.session_state.page == "dashboard":
         st.rerun()
 
     st.sidebar.success(f"Welcome {st.session_state['name']}")
-
     authenticator.logout("Logout", "sidebar")
 
-    st.title("Federated Medical AI Dashboard")
-
+    st.title("🧠 Federated Medical AI Dashboard")
     st.write("Upload MRI scan for tumor detection.")
 
     uploaded_file = st.file_uploader(
@@ -754,9 +752,37 @@ elif st.session_state.page == "dashboard":
         type=["jpg", "png", "jpeg"]
     )
 
-    if uploaded_file:
-        st.image(uploaded_file)
-        st.success("Model prediction will run here.")
+    if uploaded_file is not None:
+
+        col1, col2 = st.columns([1,1])
+
+        with col1:
+            st.image(uploaded_file, caption="Uploaded MRI", use_container_width=True)
+
+        with col2:
+
+            st.subheader("Prediction")
+
+            # Load model
+            model = load_model("brain_tumor_model.h5")
+
+            # preprocess image
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            img = cv2.imdecode(file_bytes, 1)
+
+            img = cv2.resize(img, (224,224))
+            img = img / 255.0
+            img = np.expand_dims(img, axis=0)
+
+            prediction = model.predict(img)
+
+            classes = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
+
+            pred_index = np.argmax(prediction)
+            confidence = prediction[0][pred_index] * 100
+
+            st.success(f"Prediction: {classes[pred_index]}")
+            st.info(f"Confidence: {confidence:.2f}%")
 
 
 
