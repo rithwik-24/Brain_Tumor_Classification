@@ -675,30 +675,70 @@ elif st.session_state.page == "login":
 # SIGNUP PAGE
 # ======================================
 
+# ======================================
+# SIGNUP PAGE
+# ======================================
+
 elif st.session_state.page == "signup":
 
-    st.title("Create New Account")
+    st.title("Create Account")
 
-    try:
+    name = st.text_input("Name")
+    email = st.text_input("Email")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    password2 = st.text_input("Repeat Password", type="password")
 
-        result = authenticator.register_user(location="main")
+    if st.button("Register"):
 
-        if result:
+        if password != password2:
+            st.error("Passwords do not match")
 
-            email, username, name = result
+        else:
 
-            with open("users.json", "w") as file:
-                json.dump(config, file, indent=4)
+            users = config["credentials"]["usernames"]
 
-            st.success("User registered successfully!")
+            # CHECK USERNAME
+            if username in users:
+                st.error("Username already exists")
 
-    except Exception as e:
-        st.error(e)
+            else:
+
+                # CHECK EMAIL
+                for u in users:
+                    if users[u]["email"] == email:
+                        st.error("User already exists — please login")
+                        st.stop()
+
+                # HASH PASSWORD
+                hashed = stauth.Hasher([password]).generate()[0]
+
+                # ADD USER
+                config["credentials"]["usernames"][username] = {
+                    "name": name,
+                    "email": email,
+                    "password": hashed
+                }
+
+                # SAVE
+                with open("users.json", "w") as file:
+                    json.dump(config, file, indent=4)
+
+                # AUTO LOGIN
+                st.session_state["authentication_status"] = True
+                st.session_state["username"] = username
+                st.session_state["name"] = name
+
+                st.success("Account created successfully!")
+
+                time.sleep(1)
+
+                st.session_state.page = "dashboard"
+                st.rerun()
 
     if st.button("⬅ Back"):
         st.session_state.page = "home"
         st.rerun()
-
 # ======================================
 # DASHBOARD
 # ======================================
