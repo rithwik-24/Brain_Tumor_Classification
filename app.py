@@ -585,7 +585,7 @@ import streamlit_authenticator as stauth
 
 
 # ======================================
-# PAGE CONFIG (MUST BE FIRST)
+# PAGE CONFIG (FIRST)
 # ======================================
 
 st.set_page_config(
@@ -602,7 +602,7 @@ with open("users.json") as file:
     config = json.load(file)
 
 # ======================================
-# AUTHENTICATOR
+# AUTHENTICATION SYSTEM
 # ======================================
 
 authenticator = stauth.Authenticate(
@@ -613,17 +613,43 @@ authenticator = stauth.Authenticate(
 )
 
 # ======================================
-# SIDEBAR NAVIGATION
+# SESSION STATE DEFAULT
 # ======================================
 
-menu = ["Login", "Sign Up"]
-choice = st.sidebar.selectbox("Navigation", menu)
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+
+# ======================================
+# HOME PAGE
+# ======================================
+
+if st.session_state.page == "home":
+
+    st.title("🌐 Federated Medical AI")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("Login"):
+            st.session_state.page = "login"
+            st.rerun()
+
+    with col2:
+        if st.button("Sign Up"):
+            st.session_state.page = "signup"
+            st.rerun()
+
+    with col3:
+        if st.session_state.get("authentication_status"):
+            if st.button("Dashboard"):
+                st.session_state.page = "dashboard"
+                st.rerun()
 
 # ======================================
 # LOGIN PAGE
 # ======================================
 
-if choice == "Login":
+elif st.session_state.page == "login":
 
     st.title("Login")
 
@@ -634,43 +660,27 @@ if choice == "Login":
     if auth_status == False:
         st.error("Invalid username or password")
 
-    elif auth_status is None:
-        st.warning("Please enter login details")
-
     elif auth_status:
 
-        st.success(f"Welcome {st.session_state['name']}")
+        st.success("Login successful")
 
-        st.sidebar.success(f"Logged in as {st.session_state['name']}")
+        st.session_state.page = "dashboard"
+        st.rerun()
 
-        authenticator.logout("Logout", "sidebar")
-
-        # ==============================
-        # DASHBOARD
-        # ==============================
-
-        st.title("Federated Medical AI")
-
-        st.write("Upload MRI scan for tumor detection.")
-
-        uploaded_file = st.file_uploader(
-            "Upload Brain MRI",
-            type=["jpg", "png", "jpeg"]
-        )
-
-        if uploaded_file:
-            st.image(uploaded_file)
-            st.success("Model prediction will run here.")
+    if st.button("⬅ Back"):
+        st.session_state.page = "home"
+        st.rerun()
 
 # ======================================
 # SIGNUP PAGE
 # ======================================
 
-elif choice == "Sign Up":
+elif st.session_state.page == "signup":
 
     st.title("Create New Account")
 
     try:
+
         result = authenticator.register_user(location="main")
 
         if result:
@@ -681,11 +691,41 @@ elif choice == "Sign Up":
                 json.dump(config, file, indent=4)
 
             st.success("User registered successfully!")
-            st.info("Now go to Login page")
 
     except Exception as e:
         st.error(e)
 
+    if st.button("⬅ Back"):
+        st.session_state.page = "home"
+        st.rerun()
+
+# ======================================
+# DASHBOARD
+# ======================================
+
+elif st.session_state.page == "dashboard":
+
+    if not st.session_state.get("authentication_status"):
+        st.warning("Please login first")
+        st.session_state.page = "login"
+        st.rerun()
+
+    st.sidebar.success(f"Welcome {st.session_state['name']}")
+
+    authenticator.logout("Logout", "sidebar")
+
+    st.title("Federated Medical AI Dashboard")
+
+    st.write("Upload MRI scan for tumor detection.")
+
+    uploaded_file = st.file_uploader(
+        "Upload Brain MRI",
+        type=["jpg", "png", "jpeg"]
+    )
+
+    if uploaded_file:
+        st.image(uploaded_file)
+        st.success("Model prediction will run here.")
 
 
 
@@ -693,7 +733,8 @@ elif choice == "Sign Up":
 
 
 
-        
+
+
 # ==========================================
 # CONFIG
 # ==========================================
