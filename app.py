@@ -1045,47 +1045,12 @@ elif st.session_state.page == "Client":
             except Exception:
                 pass
 
-        # Save client log entry
-        entry = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "model": choice,
-            "file_name": getattr(uploaded, "name", None),
-            "predicted_label": predicted_label,
-            "confidence": round(float(confidence) * 100, 4),
-            "integrated": False
-        }
-        # save under username if logged in, else anonymous
-        save_client_log(entry, username=st.session_state.get("username"))
-
         if st.button("🔗 Integrate with Global Model"):
             if confidence * 100 >= AGGREGATION_THRESHOLD:
                 st.session_state.has_integrated = True
                 st.success("Client update accepted")
-                # update log with integration flag
-                entry["integrated"] = True
-                entry["integrated_at"] = datetime.utcnow().isoformat()
-                save_client_log(entry, username=st.session_state.get("username"))
             else:
                 st.error("Low confidence update rejected")
-
-        # If user logged in, show their logs and allow download
-        if st.session_state.get("authentication_status"):
-            logs = load_client_logs(username=st.session_state.get("username"))
-            with st.expander("View My Client Logs"):
-                if logs:
-                    # display recent logs table
-                    import pandas as pd
-                    df = pd.DataFrame(logs)
-                    st.dataframe(df.sort_values(by="timestamp", ascending=False))
-                    # download as JSON
-                    st.download_button(
-                        "Download my logs (JSON)",
-                        data=json.dumps(logs, indent=2),
-                        file_name=f"{st.session_state.get('username')}_client_logs.json",
-                        mime="application/json"
-                    )
-                else:
-                    st.info("No client logs yet")
 
 # ===============================
 # GLOBAL (FIXED + STABLE)
