@@ -596,6 +596,10 @@ st.set_page_config(
 # AUTHENTICATION
 # ==========================================
 
+# ===============================
+# AUTHENTICATION
+# ===============================
+
 with open("users.json") as file:
     config = json.load(file)
 
@@ -613,15 +617,39 @@ if st.session_state["authentication_status"] == False:
     st.stop()
 
 elif st.session_state["authentication_status"] == None:
-    st.warning("Please enter username and password")
+    st.warning("Please login")
     st.stop()
 
 elif st.session_state["authentication_status"]:
 
     authenticator.logout(location="sidebar")
-
     st.sidebar.success(f"Welcome {st.session_state['name']}")
+# ===============================
+# REGISTER NEW USER
+# ===============================
 
+try:
+    if st.session_state["authentication_status"]:
+
+        if st.sidebar.checkbox("Register New User"):
+
+            try:
+                email, username, name = authenticator.register_user(
+                    location="sidebar",
+                    preauthorization=False
+                )
+
+                if email:
+                    st.success("User registered successfully")
+
+                    with open("users.json", "w") as file:
+                        json.dump(config, file, indent=4)
+
+            except Exception as e:
+                st.error(e)
+
+except:
+    pass
 # ==========================================
 # CONFIG
 # ==========================================
