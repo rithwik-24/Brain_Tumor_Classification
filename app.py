@@ -592,12 +592,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==========================================
-# AUTHENTICATION
-# ==========================================
+import streamlit as st
+import streamlit_authenticator as stauth
+import json
+
+# ======================================
+# PAGE CONFIG
+# ======================================
+
+st.set_page_config(
+    page_title="Federated Medical AI",
+    layout="wide"
+)
+
+# ======================================
+# LOAD USER DATA
+# ======================================
 
 with open("users.json") as file:
     config = json.load(file)
+
+# ======================================
+# AUTHENTICATOR
+# ======================================
 
 authenticator = stauth.Authenticate(
     config["credentials"],
@@ -606,47 +623,65 @@ authenticator = stauth.Authenticate(
     config["cookie"]["expiry_days"]
 )
 
+# ======================================
+# LOGIN
+# ======================================
+
 authenticator.login(location="main")
 
-# ===============================
-# REGISTER NEW USER (SHOW BEFORE STOP)
-# ===============================
+auth_status = st.session_state.get("authentication_status")
 
-if st.session_state["authentication_status"] is None:
+# ======================================
+# REGISTER USER
+# ======================================
 
-    st.markdown("### Create Account")
+if auth_status is None:
+
+    st.markdown("### Create New Account")
 
     try:
-        email, username, name = authenticator.register_user(
+        result = authenticator.register_user(
             location="main",
             preauthorization=False
         )
 
-        if email:
-            st.success("User registered successfully")
+        if result:
+            email, username, name = result
 
             with open("users.json", "w") as file:
                 json.dump(config, file, indent=4)
 
+            st.success("User registered successfully!")
+
     except Exception as e:
         st.error(e)
 
-# ===============================
-# LOGIN STATUS CHECK
-# ===============================
+# ======================================
+# LOGIN CHECK
+# ======================================
 
-if st.session_state["authentication_status"] == False:
+if auth_status == False:
     st.error("Invalid username or password")
     st.stop()
 
-elif st.session_state["authentication_status"] == None:
+elif auth_status is None:
     st.warning("Please login")
     st.stop()
 
-elif st.session_state["authentication_status"]:
+# ======================================
+# MAIN APP
+# ======================================
 
-    authenticator.logout(location="sidebar")
+elif auth_status:
+
+    authenticator.logout("Logout", "sidebar")
     st.sidebar.success(f"Welcome {st.session_state['name']}")
+
+    st.title("Federated Medical AI")
+
+    st.write("You are successfully logged in.")
+
+    st.info("Your AI dashboard goes here.")
 # ==========================================
 # CONFIG
 # ==========================================
