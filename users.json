@@ -3,8 +3,14 @@
     "usernames": {
       "admin": {
         "name": "Admin",
-        "password": "$2b$12$KIXQ9nq1vZyK7vNys8lmqO9Qz1n9vYv2zv1lX4k4pWqU2Q4YlZ0jG"
+        "email": "admin@gmail.com",
+        "password": "$2b$12$abcdefghijkabcdefghijkabcdefghijkabcdefghijk"
       }
     }
+  },
+  "cookie": {
+    "name": "federated_ai_cookie",
+    "key": "abcdef",
+    "expiry_days": 1
   }
 }

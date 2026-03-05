@@ -582,32 +582,40 @@ from tensorflow.keras.optimizers import Adamax
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+st.set_page_config(
+    page_title="Federated Medical AI",
+    layout="wide"
+)
 # ===============================
 # AUTHENTICATION
 # ===============================
 
+import json
+import streamlit_authenticator as stauth
+
 with open("users.json") as file:
-    config = yaml.load(file, Loader=SafeLoader)
+    config = json.load(file)
 
 authenticator = stauth.Authenticate(
-    config['credentials'],
-    "federated_ai_cookie",
-    "abcdef",
-    cookie_expiry_days=1
+    config["credentials"],
+    config["cookie"]["name"],
+    config["cookie"]["key"],
+    config["cookie"]["expiry_days"]
 )
 
-name, authentication_status, username = authenticator.login(location="main")
-if authentication_status == False:
+authenticator.login()
+
+if st.session_state["authentication_status"] == False:
     st.error("Invalid username or password")
 
-elif authentication_status == None:
-    st.warning("Please enter your login details")
+elif st.session_state["authentication_status"] == None:
+    st.warning("Please enter username and password")
 
-elif authentication_status:
+elif st.session_state["authentication_status"]:
 
-    authenticator.logout("Logout", "sidebar")
+    authenticator.logout(location="sidebar")
 
-    st.sidebar.success(f"Welcome {name}")
+    st.sidebar.success(f"Welcome {st.session_state['name']}")
 # ===============================
 # CONFIG
 # ===============================
