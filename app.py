@@ -579,7 +579,35 @@ from tensorflow.keras.models import load_model, Sequential
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.optimizers import Adamax
+import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
+# ===============================
+# AUTHENTICATION
+# ===============================
 
+with open("users.json") as file:
+    config = yaml.load(file, Loader=SafeLoader)
+
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    "federated_ai_cookie",
+    "abcdef",
+    cookie_expiry_days=1
+)
+
+name, authentication_status, username = authenticator.login("Login", "main")
+if authentication_status == False:
+    st.error("Invalid username or password")
+
+elif authentication_status == None:
+    st.warning("Please enter your login details")
+
+elif authentication_status:
+
+    authenticator.logout("Logout", "sidebar")
+
+    st.sidebar.success(f"Welcome {name}")
 # ===============================
 # CONFIG
 # ===============================
