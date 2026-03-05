@@ -575,7 +575,8 @@ import time
 import json
 import plotly.graph_objects as go
 
-from tensorflow.keras.models import load_model, Sequential
+from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.optimizers import Adamax
@@ -583,24 +584,8 @@ from tensorflow.keras.optimizers import Adamax
 import streamlit_authenticator as stauth
 
 
-import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
-import streamlit as st
-import tensorflow as tf
-import numpy as np
-import cv2
-import random
-import time
-import json
-import plotly.graph_objects as go
-
-from tensorflow.keras.models import load_model
-import streamlit_authenticator as stauth
-
-
 # ======================================
-# PAGE CONFIG (FIRST STREAMLIT COMMAND)
+# PAGE CONFIG (MUST BE FIRST STREAMLIT COMMAND)
 # ======================================
 
 st.set_page_config(
@@ -609,12 +594,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+
 # ======================================
 # LOAD USER DATA
 # ======================================
 
 with open("users.json") as file:
     config = json.load(file)
+
 
 # ======================================
 # AUTHENTICATION SYSTEM
@@ -627,6 +614,7 @@ authenticator = stauth.Authenticate(
     config["cookie"]["expiry_days"]
 )
 
+
 # ======================================
 # LOGIN
 # ======================================
@@ -634,6 +622,7 @@ authenticator = stauth.Authenticate(
 authenticator.login(location="main")
 
 auth_status = st.session_state.get("authentication_status")
+
 
 # ======================================
 # REGISTER USER
@@ -660,6 +649,7 @@ if auth_status is None:
     except Exception as e:
         st.error(e)
 
+
 # ======================================
 # LOGIN CHECK
 # ======================================
@@ -671,6 +661,7 @@ if auth_status == False:
 elif auth_status is None:
     st.warning("Please login")
     st.stop()
+
 
 # ======================================
 # MAIN APP
@@ -685,7 +676,10 @@ elif auth_status:
 
     st.write("Upload MRI scan for tumor detection.")
 
-    uploaded_file = st.file_uploader("Upload Brain MRI", type=["jpg", "png", "jpeg"])
+    uploaded_file = st.file_uploader(
+        "Upload Brain MRI",
+        type=["jpg", "png", "jpeg"]
+    )
 
     if uploaded_file:
 
