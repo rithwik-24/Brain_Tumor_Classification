@@ -584,10 +584,6 @@ from tensorflow.keras.optimizers import Adamax
 import streamlit_authenticator as stauth
 
 
-# ======================================
-# PAGE CONFIG (FIRST)
-# ======================================
-
 st.set_page_config(
     page_title="Federated Medical AI",
     layout="wide",
@@ -602,7 +598,7 @@ with open("users.json") as file:
     config = json.load(file)
 
 # ======================================
-# AUTHENTICATION SYSTEM
+# AUTH SYSTEM
 # ======================================
 
 authenticator = stauth.Authenticate(
@@ -613,7 +609,7 @@ authenticator = stauth.Authenticate(
 )
 
 # ======================================
-# SESSION STATE DEFAULT
+# SESSION DEFAULT
 # ======================================
 
 if "page" not in st.session_state:
@@ -661,19 +657,14 @@ elif st.session_state.page == "login":
         st.error("Invalid username or password")
 
     elif auth_status:
-
         st.success("Login successful")
-
+        time.sleep(1)
         st.session_state.page = "dashboard"
         st.rerun()
 
     if st.button("⬅ Back"):
         st.session_state.page = "home"
         st.rerun()
-
-# ======================================
-# SIGNUP PAGE
-# ======================================
 
 # ======================================
 # SIGNUP PAGE
@@ -691,54 +682,54 @@ elif st.session_state.page == "signup":
 
     if st.button("Register"):
 
+        users = config["credentials"]["usernames"]
+
+        # Password match
         if password != password2:
             st.error("Passwords do not match")
+            st.stop()
 
-        else:
+        # Username exists
+        if username in users:
+            st.error("Username already exists")
+            st.stop()
 
-            users = config["credentials"]["usernames"]
+        # Email exists
+        for u in users:
+            if users[u]["email"] == email:
+                st.error("User already exists — please login")
+                st.stop()
 
-            # CHECK USERNAME
-            if username in users:
-                st.error("Username already exists")
+        # HASH PASSWORD
+        hashed_password = stauth.Hasher.hash(password)
 
-            else:
+        # ADD USER
+        config["credentials"]["usernames"][username] = {
+            "name": name,
+            "email": email,
+            "password": hashed_password
+        }
 
-                # CHECK EMAIL
-                for u in users:
-                    if users[u]["email"] == email:
-                        st.error("User already exists — please login")
-                        st.stop()
+        # SAVE FILE
+        with open("users.json", "w") as file:
+            json.dump(config, file, indent=4)
 
-                # HASH PASSWORD
-                hashed = stauth.Hasher([password]).generate()[0]
+        # AUTO LOGIN
+        st.session_state["authentication_status"] = True
+        st.session_state["username"] = username
+        st.session_state["name"] = name
 
-                # ADD USER
-                config["credentials"]["usernames"][username] = {
-                    "name": name,
-                    "email": email,
-                    "password": hashed
-                }
+        st.success("Account created successfully!")
 
-                # SAVE
-                with open("users.json", "w") as file:
-                    json.dump(config, file, indent=4)
+        time.sleep(1)
 
-                # AUTO LOGIN
-                st.session_state["authentication_status"] = True
-                st.session_state["username"] = username
-                st.session_state["name"] = name
-
-                st.success("Account created successfully!")
-
-                time.sleep(1)
-
-                st.session_state.page = "dashboard"
-                st.rerun()
+        st.session_state.page = "dashboard"
+        st.rerun()
 
     if st.button("⬅ Back"):
         st.session_state.page = "home"
         st.rerun()
+
 # ======================================
 # DASHBOARD
 # ======================================
@@ -766,7 +757,6 @@ elif st.session_state.page == "dashboard":
     if uploaded_file:
         st.image(uploaded_file)
         st.success("Model prediction will run here.")
-
 
 
 
