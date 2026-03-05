@@ -583,26 +583,30 @@ from tensorflow.keras.optimizers import Adamax
 import streamlit_authenticator as stauth
 
 
-# ==========================================
-# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
-# ==========================================
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+import streamlit as st
+import tensorflow as tf
+import numpy as np
+import cv2
+import random
+import time
+import json
+import plotly.graph_objects as go
+
+from tensorflow.keras.models import load_model
+import streamlit_authenticator as stauth
+
+
+# ======================================
+# PAGE CONFIG (FIRST STREAMLIT COMMAND)
+# ======================================
+
 st.set_page_config(
     page_title="Federated Medical AI",
     layout="wide",
     initial_sidebar_state="collapsed"
-)
-
-import streamlit as st
-import streamlit_authenticator as stauth
-import json
-
-# ======================================
-# PAGE CONFIG
-# ======================================
-
-st.set_page_config(
-    page_title="Federated Medical AI",
-    layout="wide"
 )
 
 # ======================================
@@ -613,7 +617,7 @@ with open("users.json") as file:
     config = json.load(file)
 
 # ======================================
-# AUTHENTICATOR
+# AUTHENTICATION SYSTEM
 # ======================================
 
 authenticator = stauth.Authenticate(
@@ -679,9 +683,15 @@ elif auth_status:
 
     st.title("Federated Medical AI")
 
-    st.write("You are successfully logged in.")
+    st.write("Upload MRI scan for tumor detection.")
 
-    st.info("Your AI dashboard goes here.")
+    uploaded_file = st.file_uploader("Upload Brain MRI", type=["jpg", "png", "jpeg"])
+
+    if uploaded_file:
+
+        st.image(uploaded_file)
+
+        st.success("Model prediction will run here.")
 # ==========================================
 # CONFIG
 # ==========================================
