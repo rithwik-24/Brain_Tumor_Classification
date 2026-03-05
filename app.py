@@ -596,10 +596,6 @@ st.set_page_config(
 # AUTHENTICATION
 # ==========================================
 
-# ===============================
-# AUTHENTICATION
-# ===============================
-
 with open("users.json") as file:
     config = json.load(file)
 
@@ -611,6 +607,33 @@ authenticator = stauth.Authenticate(
 )
 
 authenticator.login(location="main")
+
+# ===============================
+# REGISTER NEW USER (SHOW BEFORE STOP)
+# ===============================
+
+if st.session_state["authentication_status"] is None:
+
+    st.markdown("### Create Account")
+
+    try:
+        email, username, name = authenticator.register_user(
+            location="main",
+            preauthorization=False
+        )
+
+        if email:
+            st.success("User registered successfully")
+
+            with open("users.json", "w") as file:
+                json.dump(config, file, indent=4)
+
+    except Exception as e:
+        st.error(e)
+
+# ===============================
+# LOGIN STATUS CHECK
+# ===============================
 
 if st.session_state["authentication_status"] == False:
     st.error("Invalid username or password")
@@ -624,34 +647,6 @@ elif st.session_state["authentication_status"]:
 
     authenticator.logout(location="sidebar")
     st.sidebar.success(f"Welcome {st.session_state['name']}")
-# ===============================
-# REGISTER NEW USER
-# ===============================
-
-try:
-
-    # allow registration BEFORE login
-    if st.session_state["authentication_status"] is None:
-
-        st.markdown("### Create Account")
-
-        try:
-            email, username, name = authenticator.register_user(
-                location="main",
-                preauthorization=False
-            )
-
-            if email:
-                st.success("User registered successfully")
-
-                with open("users.json", "w") as file:
-                    json.dump(config, file, indent=4)
-
-        except Exception as e:
-            st.error(e)
-
-except:
-    pass
 # ==========================================
 # CONFIG
 # ==========================================
