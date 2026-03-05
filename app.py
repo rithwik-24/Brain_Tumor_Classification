@@ -579,19 +579,22 @@ from tensorflow.keras.models import load_model, Sequential
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.optimizers import Adamax
+
 import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
+
+
+# ==========================================
+# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
+# ==========================================
 st.set_page_config(
     page_title="Federated Medical AI",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
-# ===============================
-# AUTHENTICATION
-# ===============================
 
-import json
-import streamlit_authenticator as stauth
+# ==========================================
+# AUTHENTICATION
+# ==========================================
 
 with open("users.json") as file:
     config = json.load(file)
@@ -603,27 +606,24 @@ authenticator = stauth.Authenticate(
     config["cookie"]["expiry_days"]
 )
 
-authenticator.login()
+name, authentication_status, username = authenticator.login("Login", "main")
 
-if st.session_state["authentication_status"] == False:
+if authentication_status == False:
     st.error("Invalid username or password")
+    st.stop()
 
-elif st.session_state["authentication_status"] == None:
+elif authentication_status == None:
     st.warning("Please enter username and password")
+    st.stop()
 
-elif st.session_state["authentication_status"]:
+elif authentication_status:
 
-    authenticator.logout(location="sidebar")
+    authenticator.logout("Logout", "sidebar")
+    st.sidebar.success(f"Welcome {name}")
 
-    st.sidebar.success(f"Welcome {st.session_state['name']}")
-# ===============================
+# ==========================================
 # CONFIG
-# ===============================
-st.set_page_config(
-    page_title="Federated Medical AI",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ==========================================
 
 GLOBAL_MIN = 55.0
 GLOBAL_MAX = 72.0
@@ -635,9 +635,10 @@ CLASS_NAMES = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
 output_dir = "saliency_maps"
 os.makedirs(output_dir, exist_ok=True)
 
-# ===============================
+# ==========================================
 # STYLE
-# ===============================
+# ==========================================
+
 st.markdown("""
 <style>
 .stApp {
@@ -664,9 +665,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ===============================
-# GLOBAL HISTORY HELPERS (FIX)
-# ===============================
+# ==========================================
+# GLOBAL HISTORY HELPERS
+# ==========================================
+
 def load_global_history():
     if os.path.exists(GLOBAL_HISTORY_FILE):
         try:
@@ -680,9 +682,10 @@ def save_global_history(history):
     with open(GLOBAL_HISTORY_FILE, "w") as f:
         json.dump(history, f)
 
-# ===============================
+# ==========================================
 # SESSION STATE
-# ===============================
+# ==========================================
+
 if "page" not in st.session_state:
     st.session_state.page = "Landing"
 
@@ -703,10 +706,12 @@ if "has_integrated" not in st.session_state:
 if "client_predicted" not in st.session_state:
     st.session_state.client_predicted = False
 
-# ===============================
-# SALIENCY MAP (UNCHANGED)
-# ===============================
+# ==========================================
+# SALIENCY MAP
+# ==========================================
+
 def generate_saliency_map(model, img_array, class_index, img_size, img, uploaded_file, file_name):
+
     with tf.GradientTape() as tape:
         img_tensor = tf.convert_to_tensor(img_array)
         tape.watch(img_tensor)
@@ -723,6 +728,7 @@ def generate_saliency_map(model, img_array, class_index, img_size, img, uploaded
     mask = (x - center[0])**2 + (y - center[1])**2 <= radius**2
 
     gradients *= mask
+
     if gradients[mask].max() > gradients[mask].min():
         gradients[mask] = (gradients[mask] - gradients[mask].min()) / (gradients[mask].max() - gradients[mask].min())
 
@@ -736,13 +742,17 @@ def generate_saliency_map(model, img_array, class_index, img_size, img, uploaded
     original = image.img_to_array(img)
     overlay = (heatmap * 0.7 + original * 0.3).astype(np.uint8)
 
-    cv2.imwrite(os.path.join(output_dir, file_name), cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(os.path.join(output_dir, file_name),
+                cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+
     return overlay
 
-# ===============================
-# MODEL LOADER (UNCHANGED)
-# ===============================
+# ==========================================
+# MODEL LOADER
+# ==========================================
+
 def load_xception_model(path):
+
     if not os.path.exists(path):
         st.error("Xception weights not found.")
         st.stop()
@@ -750,7 +760,7 @@ def load_xception_model(path):
     base = tf.keras.applications.Xception(
         include_top=False,
         weights="imagenet",
-        input_shape=(299, 299, 3),
+        input_shape=(299,299,3),
         pooling="max"
     )
 
@@ -762,8 +772,14 @@ def load_xception_model(path):
         Dense(4, activation="softmax")
     ])
 
-    model.compile(Adamax(0.001), "categorical_crossentropy", ["accuracy"])
+    model.compile(
+        optimizer=Adamax(0.001),
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
     model.load_weights(path)
+
     return model
 
 # ===============================
