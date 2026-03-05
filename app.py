@@ -581,7 +581,11 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.optimizers import Adamax
 
-import streamlit_authenticator as stauth
+from auth_db import init_db, verify_user, create_user, get_user_by_username, get_user_by_email
+
+
+# initialize DB
+init_db()
 
 
 st.set_page_config(
@@ -590,35 +594,50 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ======================================
-# LOAD USER DATA
-# ======================================
+# Global config used by Global page
+GLOBAL_MIN = 55.0
+GLOBAL_MAX = 72.0
+AGGREGATION_THRESHOLD = 70.0
 
-with open("users.json") as file:
-    config = json.load(file)
+GLOBAL_HISTORY_FILE = "global_accuracy_history.json"
 
-# ======================================
-# AUTH SYSTEM
-# ======================================
+CLASS_NAMES = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
 
-authenticator = stauth.Authenticate(
-    config["credentials"],
-    config["cookie"]["name"],
-    config["cookie"]["key"],
-    config["cookie"]["expiry_days"]
-)
+output_dir = "saliency_maps"
+os.makedirs(output_dir, exist_ok=True)
 
-# ======================================
-# SESSION DEFAULT
-# ======================================
 
+
+def _load_global_history():
+    try:
+        if os.path.exists("global_accuracy_history.json"):
+            with open("global_accuracy_history.json", "r") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return []
+
+
+def _save_global_history(history):
+    with open("global_accuracy_history.json", "w") as f:
+        json.dump(history, f)
+
+
+# Session defaults
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ======================================
-# HOME PAGE
-# ======================================
+if "authentication_status" not in st.session_state:
+    st.session_state.authentication_status = False
 
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+if "name" not in st.session_state:
+    st.session_state.name = None
+
+
+# Home page
 if st.session_state.page == "home":
 
     st.title("🌐 Federated Medical AI")
@@ -641,35 +660,34 @@ if st.session_state.page == "home":
                 st.session_state.page = "dashboard"
                 st.rerun()
 
-# ======================================
-# LOGIN PAGE
-# ======================================
 
+# Login page
 elif st.session_state.page == "login":
 
     st.title("Login")
 
-    authenticator.login(location="main")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
-    auth_status = st.session_state.get("authentication_status")
-
-    if auth_status == False:
-        st.error("Invalid username or password")
-
-    elif auth_status:
-        st.success("Login successful")
-        time.sleep(1)
-        st.session_state.page = "Landing"
-        st.rerun()
+    if st.button("Login"):
+        user = verify_user(username, password)
+        if user:
+            st.session_state.authentication_status = True
+            st.session_state.username = username
+            st.session_state.name = user.get("name")
+            st.success("Login successful")
+            time.sleep(1)
+            st.session_state.page = "Landing"
+            st.rerun()
+        else:
+            st.error("Invalid username or password")
 
     if st.button("⬅ Back"):
         st.session_state.page = "home"
         st.rerun()
 
-# ======================================
-# SIGNUP PAGE
-# ======================================
 
+# Signup page
 elif st.session_state.page == "signup":
 
     st.title("Create Account")
@@ -682,58 +700,31 @@ elif st.session_state.page == "signup":
 
     if st.button("Register"):
 
-        users = config["credentials"]["usernames"]
-
-        # Password match
         if password != password2:
             st.error("Passwords do not match")
-            st.stop()
-
-        # Username exists
-        if username in users:
+        elif get_user_by_username(username):
             st.error("Username already exists")
-            st.stop()
-
-        # Email exists
-        for u in users:
-            if users[u]["email"] == email:
-                st.error("User already exists — please login")
-                st.stop()
-
-        # HASH PASSWORD
-        hashed_password = stauth.Hasher.hash(password)
-
-        # ADD USER
-        config["credentials"]["usernames"][username] = {
-            "name": name,
-            "email": email,
-            "password": hashed_password
-        }
-
-        # SAVE FILE
-        with open("users.json", "w") as file:
-            json.dump(config, file, indent=4)
-
-        # AUTO LOGIN
-        st.session_state["authentication_status"] = True
-        st.session_state["username"] = username
-        st.session_state["name"] = name
-
-        st.success("Account created successfully!")
-
-        time.sleep(1)
-
-        st.session_state.page = "Landing"
-        st.rerun()
+        elif get_user_by_email(email):
+            st.error("Email already registered — please login")
+        else:
+            ok = create_user(name, username, email, password)
+            if not ok:
+                st.error("Failed to create user — try a different username/email")
+            else:
+                st.session_state.authentication_status = True
+                st.session_state.username = username
+                st.session_state.name = name
+                st.success("Account created successfully!")
+                time.sleep(1)
+                st.session_state.page = "Landing"
+                st.rerun()
 
     if st.button("⬅ Back"):
         st.session_state.page = "home"
         st.rerun()
 
-# ======================================
-# DASHBOARD
-# ======================================
 
+# Dashboard
 elif st.session_state.page == "dashboard":
 
     if not st.session_state.get("authentication_status"):
@@ -741,8 +732,13 @@ elif st.session_state.page == "dashboard":
         st.session_state.page = "login"
         st.rerun()
 
-    st.sidebar.success(f"Welcome {st.session_state['name']}")
-    authenticator.logout("Logout", "sidebar")
+    st.sidebar.success(f"Welcome {st.session_state.get('name')}")
+    if st.sidebar.button("Logout"):
+        st.session_state.authentication_status = False
+        st.session_state.username = None
+        st.session_state.name = None
+        st.session_state.page = "home"
+        st.rerun()
 
     st.title("🧠 Federated Medical AI Dashboard")
     st.write("Upload MRI scan for tumor detection.")
@@ -764,46 +760,38 @@ elif st.session_state.page == "dashboard":
             st.subheader("Prediction")
 
             # Load model
-            model = load_model("brain_tumor_model.h5")
+            try:
+                model = load_model("brain_tumor_model.h5")
+            except Exception:
+                st.error("Model not found or failed to load")
+                model = None
 
-            # preprocess image
-            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-            img = cv2.imdecode(file_bytes, 1)
+            if model is not None:
+                # preprocess image
+                file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+                img = cv2.imdecode(file_bytes, 1)
 
-            img = cv2.resize(img, (224,224))
-            img = img / 255.0
-            img = np.expand_dims(img, axis=0)
+                img = cv2.resize(img, (224,224))
+                img = img / 255.0
+                img = np.expand_dims(img, axis=0)
 
-            prediction = model.predict(img)
+                prediction = model.predict(img)
 
-            classes = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
+                classes = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
 
-            pred_index = np.argmax(prediction)
-            confidence = prediction[0][pred_index] * 100
+                pred_index = np.argmax(prediction)
+                confidence = prediction[0][pred_index] * 100
 
-            st.success(f"Prediction: {classes[pred_index]}")
-            st.info(f"Confidence: {confidence:.2f}%")
-
-
-
+                st.success(f"Prediction: {classes[pred_index]}")
+                st.info(f"Confidence: {confidence:.2f}%")
 
 
 
 
 
-# ==========================================
-# CONFIG
-# ==========================================
 
-GLOBAL_MIN = 55.0
-GLOBAL_MAX = 72.0
-AGGREGATION_THRESHOLD = 70.0
-GLOBAL_HISTORY_FILE = "global_accuracy_history.json"
 
-CLASS_NAMES = ["Glioma", "Meningioma", "No Tumor", "Pituitary"]
 
-output_dir = "saliency_maps"
-os.makedirs(output_dir, exist_ok=True)
 
 # ==========================================
 # STYLE
