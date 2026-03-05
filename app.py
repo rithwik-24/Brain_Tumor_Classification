@@ -846,7 +846,22 @@ elif st.session_state.page == "Global":
             progress.progress(i + 1)
 
         # ✅ TRUE RANDOM GLOBAL ACCURACY EACH ROUND
-        new_acc = round(random.uniform(GLOBAL_MIN, GLOBAL_MAX), 2)
+        # new_acc = round(random.uniform(GLOBAL_MIN, GLOBAL_MAX), 2)
+        # Progressive federated accuracy improvement
+        prev_acc = st.session_state.global_acc
+
+        # improvement gets smaller as accuracy increases
+        improvement = random.uniform(0.5, 2.0) * (1 - prev_acc / GLOBAL_MAX)
+
+        new_acc = prev_acc + improvement
+
+        # add tiny noise for realism
+        new_acc += random.uniform(-0.2, 0.2)
+
+        # clamp within bounds
+        new_acc = max(GLOBAL_MIN, min(GLOBAL_MAX, new_acc))
+
+        new_acc = round(new_acc, 2)
 
         st.session_state.acc_history.append(new_acc)
         st.session_state.global_acc = new_acc
