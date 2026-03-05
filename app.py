@@ -585,7 +585,7 @@ import streamlit_authenticator as stauth
 
 
 # ======================================
-# PAGE CONFIG (MUST BE FIRST STREAMLIT COMMAND)
+# PAGE CONFIG (MUST BE FIRST)
 # ======================================
 
 st.set_page_config(
@@ -602,7 +602,7 @@ with open("users.json") as file:
     config = json.load(file)
 
 # ======================================
-# AUTHENTICATION SYSTEM
+# AUTHENTICATOR
 # ======================================
 
 authenticator = stauth.Authenticate(
@@ -616,23 +616,30 @@ authenticator = stauth.Authenticate(
 # LOGIN
 # ======================================
 
-name, authentication_status, username = authenticator.login("Login", "main")
+authenticator.login(location="main")
+
+auth_status = st.session_state.get("authentication_status")
 
 # ======================================
-# REGISTER USER
+# REGISTER NEW USER
 # ======================================
 
-if authentication_status is None:
+if auth_status is None:
 
     st.markdown("## Create New Account")
 
     try:
-        if authenticator.register_user("Register user", location="main"):
+        result = authenticator.register_user(
+            location="main"
+        )
+
+        if result:
+            email, username, name = result
 
             with open("users.json", "w") as file:
                 json.dump(config, file, indent=4)
 
-            st.success("User registered successfully")
+            st.success("User registered successfully!")
 
     except Exception as e:
         st.error(e)
@@ -641,11 +648,11 @@ if authentication_status is None:
 # LOGIN CHECK
 # ======================================
 
-if authentication_status == False:
+if auth_status == False:
     st.error("Invalid username or password")
     st.stop()
 
-elif authentication_status is None:
+elif auth_status is None:
     st.warning("Please login")
     st.stop()
 
@@ -653,11 +660,11 @@ elif authentication_status is None:
 # MAIN APP
 # ======================================
 
-if authentication_status:
+elif auth_status:
 
     authenticator.logout("Logout", "sidebar")
 
-    st.sidebar.success(f"Welcome {name}")
+    st.sidebar.success(f"Welcome {st.session_state['name']}")
 
     st.title("Federated Medical AI")
 
@@ -669,9 +676,7 @@ if authentication_status:
     )
 
     if uploaded_file:
-
         st.image(uploaded_file)
-
         st.success("Model prediction will run here.")
 # ==========================================
 # CONFIG
