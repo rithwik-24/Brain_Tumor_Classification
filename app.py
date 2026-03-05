@@ -594,14 +594,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-
 # ======================================
 # LOAD USER DATA
 # ======================================
 
 with open("users.json") as file:
     config = json.load(file)
-
 
 # ======================================
 # AUTHENTICATION SYSTEM
@@ -614,63 +612,52 @@ authenticator = stauth.Authenticate(
     config["cookie"]["expiry_days"]
 )
 
-
 # ======================================
 # LOGIN
 # ======================================
 
-authenticator.login(location="main")
-
-auth_status = st.session_state.get("authentication_status")
-
+name, authentication_status, username = authenticator.login("Login", "main")
 
 # ======================================
 # REGISTER USER
 # ======================================
 
-if auth_status is None:
+if authentication_status is None:
 
-    st.markdown("### Create New Account")
+    st.markdown("## Create New Account")
 
     try:
-        result = authenticator.register_user(
-            location="main",
-            preauthorization=False
-        )
-
-        if result:
-            email, username, name = result
+        if authenticator.register_user("Register user", location="main"):
 
             with open("users.json", "w") as file:
                 json.dump(config, file, indent=4)
 
-            st.success("User registered successfully!")
+            st.success("User registered successfully")
 
     except Exception as e:
         st.error(e)
-
 
 # ======================================
 # LOGIN CHECK
 # ======================================
 
-if auth_status == False:
+if authentication_status == False:
     st.error("Invalid username or password")
     st.stop()
 
-elif auth_status is None:
+elif authentication_status is None:
     st.warning("Please login")
     st.stop()
-
 
 # ======================================
 # MAIN APP
 # ======================================
 
-elif auth_status:
+if authentication_status:
 
     authenticator.logout("Logout", "sidebar")
-    st.sidebar.success(f"Welcome {st.session_state['name']}")
+
+    st.sidebar.success(f"Welcome {name}")
 
     st.title("Federated Medical AI")
 
